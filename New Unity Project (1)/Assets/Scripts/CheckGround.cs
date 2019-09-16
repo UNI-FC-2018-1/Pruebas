@@ -22,15 +22,19 @@ public class CheckGround : MonoBehaviour
         if (col.gameObject.tag == "Ground")
         {
             player.grounded = true;
+            
+
         }
-        
     }
 
-    private void OnCollisionExit2D(Collision2D col)
+    void OnCollisionExit2D(Collision2D col)
     {
         if (col.gameObject.tag == "Ground")
         {
             player.grounded = false;
+            
         }
     }
+
+    
 }

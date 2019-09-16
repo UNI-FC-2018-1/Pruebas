@@ -11,7 +11,9 @@ public class PlayerController : MonoBehaviour
     private Animator anim;
     public float JumpSonic = 6.5f;
     private bool JumpD;
-
+    public bool Jump;
+    private bool InAir;
+    private bool Fall;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,11 +25,20 @@ public class PlayerController : MonoBehaviour
     {
         anim.SetFloat("Speed", Mathf.Abs(rb2d.velocity.x));
         anim.SetBool("Grounded", grounded);
-
+        anim.SetBool("Jump", Jump);
+        anim.SetBool("InAir", InAir);
+        anim.SetBool("Fall", Fall);
         if (Input.GetKeyDown(KeyCode.UpArrow) && grounded)
         {
             JumpD = true;
+            
         }
+
+        
+        
+  
+       
+
     }   
     // Update is called once per frame
     void FixedUpdate()
@@ -54,11 +65,37 @@ public class PlayerController : MonoBehaviour
         if (JumpD)
         {
             rb2d.AddForce(Vector2.up * JumpSonic, ForceMode2D.Impulse);
+            
             JumpD = false;
+           
         }
-
-
-
         Debug.Log(rb2d.velocity.x);
+
+        
+
+
     }
+
+   
+
+    /*void OnTriggerExit2D(Collider2D col)
+    {
+        if (col.CompareTag("LimitCol"))
+        {
+            Jump = false;
+            InAir = true;
+            Debug.Log("Salió del triger");
+        }
+    }*/
+
+    /*private void OnTriggerEnter2D(Collider2D col)
+    {
+        if (col.CompareTag("LimitCol"))
+        {
+            InAir = false;
+        }
+    }*/
+
+
+
 }
