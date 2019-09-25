@@ -4,12 +4,13 @@ using UnityEngine;
 
 public class Ball : MonoBehaviour
 {
-
+    public PlayerController player;
     // Start is called before the first frame update
     void Start()
     {
 
     }
+
 
 
 
@@ -19,9 +20,11 @@ public class Ball : MonoBehaviour
         {
             gameObject.SetActive(false);
             transform.position = new Vector2(-4.58f, 4.8f);
-         
-            
+            GetComponent<Rigidbody2D>().velocity = new Vector2(0f,0f);
+            player.LaunchCond = true;
 
         }
     }
+
 }
+

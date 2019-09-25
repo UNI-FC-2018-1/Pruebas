@@ -5,9 +5,11 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviour
 {
+  
     public GameObject Player;
     public GameObject Ball;
-
+    public bool LaunchCond=true;
+    
     public float maxSpeed = 5f;
     public float speed = 2f;
     public bool grounded;
@@ -23,18 +25,30 @@ public class PlayerController : MonoBehaviour
     private bool InAir;
     private bool LaunchD;
     private bool Launch;
+    public float Dash=20f;
+    public bool dash=false;
+    public float Wait;
 
-
-   /* public IEnumerator Wait()
+    /* public IEnumerator Wait()
+     {
+         yield return new WaitForSeconds(0.2f);
+         Launch = false;
+         Debug.Log("retrasos");
+     }*/
+    ///Rutina de espera para el lanzamiento de bola
+    ///
+    public IEnumerator WaitDash()
     {
-        yield return new WaitForSeconds(0.2f);
-        Launch = false;
-        Debug.Log("retrasos");
-    }*/
-
+        yield return new WaitForSeconds(Wait);
+        dash = false;
+        rb2d.constraints = RigidbodyConstraints2D.FreezeRotation;
+        Debug.Log("retraso");
+    }
     public IEnumerator WaitBall()
     {
-        yield return new WaitForSeconds(0.35f);
+        LaunchCond = false;
+        yield return new WaitForSeconds(0.4f);
+        Launch = false;
         Ball.gameObject.SetActive(true);
         Ball.transform.position = BallPos;
         Ball.GetComponent<Rigidbody2D>().velocity = velocidad;
@@ -44,39 +58,94 @@ public class PlayerController : MonoBehaviour
     {
         rb2d = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
-
+        
     }
     void Update()
     {
+        //////animaciones 
         anim.SetFloat("Speed", Mathf.Abs(rb2d.velocity.x));
         anim.SetBool("Grounded", grounded);
         anim.SetBool("Jump", Jump);
         anim.SetBool("InAir", InAir);
         anim.SetBool("Launch", Launch);
+        anim.SetBool("ShiftDash", dash);
 
 
-
+        ///Salto detectando el piso con condición
+        ///
         if (Input.GetKeyDown(KeyCode.UpArrow) && grounded)
         {
             JumpD = true;
 
         }
+        ///////////////////////////////////////////////7
+        //////////////Dash
+        if (Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.RightArrow) && Mathf.Abs(rb2d.velocity.x)>=maxSpeed)
+        {
+            
+            rb2d.AddRelativeForce(Vector2.right * Dash, ForceMode2D.Force); 
+            rb2d.constraints = RigidbodyConstraints2D.FreezePositionY| RigidbodyConstraints2D.FreezeRotation;
+            Debug.Log("dash derecho");
+            dash = true;
+            StartCoroutine(WaitDash());
+            
+        }
 
-        if (Input.GetKeyDown(KeyCode.L))
+        else if (Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.LeftArrow) && Mathf.Abs(rb2d.velocity.x) >= maxSpeed)
+        {
+            rb2d.AddForce(Vector2.left * Dash, ForceMode2D.Force);
+            rb2d.constraints= RigidbodyConstraints2D.FreezePositionY| RigidbodyConstraints2D.FreezeRotation;
+            Debug.Log("dash izquierdo");
+            dash = true;
+            StartCoroutine(WaitDash());
+        }
+        
+        }
+
+
+    
+    // Update is called once per frame
+    void FixedUpdate()
+    {
+
+        /////////////Lanzamiento de bola inicial
+
+        if (Input.GetKeyDown(KeyCode.X) && LaunchCond && grounded)
         {
             Launch = true;
             LaunchD = true;
 
+            if (transform.localScale == new Vector3(2.5f, 2.5f, 1f))
+            {
+                Ball.transform.localScale = new Vector3(2f, 2f, 1f);
+                //velocidad = new Vector3(ballSpeed, 0f, 0f);
+                //BallPos = Player.transform.position + new Vector3(0.87f, 0.27f, 0f);
+            }
+            else if (transform.localScale == new Vector3(-2.5f, 2.5f, 1f))
+            {
+                Ball.transform.localScale = new Vector3(-2f, 2f, 1f);
+                //velocidad = new Vector3(-ballSpeed, 0f, 0f);
+                //BallPos = Player.transform.position + new Vector3(-0.87f, 0.27f, 0f);
+            }
+
+        }
+
+        if (transform.localScale == new Vector3(2.5f, 2.5f, 1f))
+        {
+            //Ball.transform.localScale = new Vector3(2f, 2f, 1f);
+            velocidad = new Vector3(ballSpeed, 0f, 0f);
+            BallPos = Player.transform.position + new Vector3(0.87f, 0.27f, 0f);
+        }
+        else if (transform.localScale == new Vector3(-2.5f, 2.5f, 1f))
+        {
+            //Ball.transform.localScale = new Vector3(-2f, 2f, 1f);
+            velocidad = new Vector3(-ballSpeed, 0f, 0f);
+            BallPos = Player.transform.position + new Vector3(-0.87f, 0.27f, 0f);
         }
 
 
-
-
-
-    }
-    // Update is called once per frame
-    void FixedUpdate()
-    {
+       ////////////Movimiento en X
+       ///
         float h = Input.GetAxis("Horizontal");
 
         rb2d.AddForce(Vector2.right * speed * h);
@@ -96,10 +165,12 @@ public class PlayerController : MonoBehaviour
 
 
         }
-        if (Mathf.Abs(rb2d.velocity.x) <= maxSpeed * 0.9)
+        /*if (Mathf.Abs(rb2d.velocity.x) <= maxSpeed * 0.9)
         {
             rb2d.velocity = new Vector2(0f, rb2d.velocity.y);
-        }
+        }*/
+
+        /////////SALTO
         if (JumpD)
         {
             rb2d.AddForce(Vector2.up * JumpSonic, ForceMode2D.Impulse);
@@ -109,32 +180,22 @@ public class PlayerController : MonoBehaviour
             JumpD = false;
 
         }
+        ////////////////////////////////////7
+        
 
-        if (transform.localScale == new Vector3(2.5f, 2.5f, 1f))
-        {
-            Ball.transform.localScale = new Vector3(2f, 2f, 1f);
-            velocidad = new Vector3(ballSpeed, 0f, 0f);
-            BallPos = Player.transform.position + new Vector3(0.87f, 0.27f, 0f);
-        }
-        else if (transform.localScale == new Vector3(-2.5f, 2.5f, 1f))
-        {
-            Ball.transform.localScale = new Vector3(-2f, 2f, 1f);
-            velocidad = new Vector3(-ballSpeed, 0f, 0f);
-            BallPos = Player.transform.position + new Vector3(-0.87f, 0.27f, 0f);
-        }
-
-
+////////////Lanzamiento de bola
         if (LaunchD)
         {
              //Player.transform.position + new Vector3(0.87f, 0.27f, 0f);
             StartCoroutine(WaitBall());
-         
+
             //StartCoroutine(Wait());
+            
             LaunchD = false;
             Debug.Log("Lanzamiento");
         }
 
-
+        ///////Condición de Air
         if (rb2d.velocity.y < 0)
         {
             Jump = false;
@@ -144,7 +205,17 @@ public class PlayerController : MonoBehaviour
         }
 
         else InAir = false;
+        ////////////////////////////////
+        ///
+
+        ////////Movimiento del Dash
+        
     }
+    ////////////////////////////
+
+
+
+
 }
 
     
