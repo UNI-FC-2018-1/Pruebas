@@ -1,9 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
-public class AirBotController : MonoBehaviour
+public class Prueba : MonoBehaviour
 {
     public GameObject PlayerPos;
     public GameObject Target;
@@ -51,7 +50,7 @@ public class AirBotController : MonoBehaviour
 
     void FixedUpdate()
     {
-        
+
         rb2d.bodyType = RigidbodyType2D.Static;
         bool Cond;
 
@@ -68,8 +67,8 @@ public class AirBotController : MonoBehaviour
         if (Cond2 == true && Cond == true)
         {
             PlayerPos.GetComponent<Transform>().position = target.position;
-
-
+            
+            
         }
         Rotation();
         rb2d.bodyType = RigidbodyType2D.Dynamic;
@@ -82,22 +81,21 @@ public class AirBotController : MonoBehaviour
 
 
 
-    private void OnTriggerStay2D(Collider2D collision)
-    {
-        if (collision.gameObject.CompareTag("PosRef"))
+        private void OnTriggerStay2D(Collider2D collision)
         {
-            Cond2 = true;
-            rb2d.bodyType = RigidbodyType2D.Static;
-            transform.rotation = Quaternion.Euler(new Vector3(0,0,0));
-            Debug.Log("Trigger active");
+            if (collision.gameObject.CompareTag("PosRef"))
+            {
+                Cond2 = true;
+                rb2d.bodyType = RigidbodyType2D.Static;
+                Debug.Log("Trigger active");
+            }
+            else
+            {
+                Cond2 = false;
+                Debug.Log("Trigger off");
+            }
+
         }
-        else
-        {
-            Cond2 = false;
-            Debug.Log("Trigger off");
-        }
 
-    }
-
-
+    
 }

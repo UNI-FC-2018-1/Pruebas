@@ -8,6 +8,7 @@ TagManager:
   - LimitCol
   - Wall
   - FallOut
+  - PosRef
   layers:
   - Default
   - TransparentFX
@@ -18,7 +19,7 @@ TagManager:
   - 
   - 
   - Background
-  - 
+  - EnemieFly
   - 
   - 
   - 

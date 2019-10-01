@@ -247,8 +247,6 @@ public class PlayerController : MonoBehaviour
         {
             rb2d.AddForce(Vector2.up * JumpSonic, ForceMode2D.Impulse);
             Jump = true;
-
-            Debug.Log("Impulso");
             JumpD = false;
 
         }
