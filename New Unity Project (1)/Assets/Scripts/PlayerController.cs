@@ -9,6 +9,7 @@ public class PlayerController : MonoBehaviour
     public GameObject Player;
     public GameObject Ball;
     public GameObject Detroit_Smash;
+    public GameObject ref_Punch;
     public bool LaunchCond=true;
     public bool detroitCond= true;
     public float maxSpeed = 5f;
@@ -32,6 +33,7 @@ public class PlayerController : MonoBehaviour
     public float Wait;
     private bool detroit;
     private bool detroitD;
+    private bool punch;
 
     /* public IEnumerator Wait()
      {
@@ -41,7 +43,18 @@ public class PlayerController : MonoBehaviour
      }*/
     ///Rutina de espera para el lanzamiento de bola
     ///
+    ////////////////////////////////////////////////////////////7
+    ///
 
+
+    public IEnumerator WaitPunch()
+    {
+        ref_Punch.gameObject.SetActive(true);
+        yield return new WaitForSeconds(0.3f);
+        ref_Punch.gameObject.SetActive(false);
+        punch = false;
+
+    }
     public IEnumerator WaitDash()
     {
         yield return new WaitForSeconds(Wait);
@@ -52,9 +65,9 @@ public class PlayerController : MonoBehaviour
     public IEnumerator WaitBall()
     {
         LaunchCond = false;
+        Ball.gameObject.SetActive(true);
         yield return new WaitForSeconds(0.4f);
         Launch = false;
-        Ball.gameObject.SetActive(true);
         Ball.transform.position = BallPos;
         Ball.GetComponent<Rigidbody2D>().velocity = velocidad;
     }
@@ -62,15 +75,18 @@ public class PlayerController : MonoBehaviour
     public IEnumerator WaitDetroit()
     {
         detroitCond=false;
-        yield return new WaitForSeconds(0.4f);
-        detroit = false;
+        
         Detroit_Smash.gameObject.SetActive(true);
+        yield return new WaitForSeconds(0.4f);
         Detroit_Smash.transform.position = DetroitPos;
         Detroit_Smash.GetComponent<Rigidbody2D>().velocity = velocidad;
+        detroit = false;
+
     }
 
-
-
+/// <summary>
+/// ///////////////////////////////////////////////////////////////////777
+/// </summary>
 
 
     // Start is called before the first frame update    
@@ -90,7 +106,39 @@ public class PlayerController : MonoBehaviour
         anim.SetBool("Launch", Launch);
         anim.SetBool("ShiftDash", dash);
         anim.SetBool("Detroit", detroit);
+        anim.SetBool("Punch", punch);
 
+        Punching();
+
+    }
+
+    void Dashing()
+    {
+
+        
+        if (Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.RightArrow) && Mathf.Abs(rb2d.velocity.x) >= maxSpeed)
+        {
+
+            rb2d.AddRelativeForce(Vector2.right * Dash, ForceMode2D.Force);
+            rb2d.constraints = RigidbodyConstraints2D.FreezePositionY | RigidbodyConstraints2D.FreezeRotation;
+            Debug.Log("dash derecho");
+            dash = true;
+            StartCoroutine(WaitDash());
+
+        }
+
+        else if (Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.LeftArrow) && Mathf.Abs(rb2d.velocity.x) >= maxSpeed)
+        {
+            rb2d.AddForce(Vector2.left * Dash, ForceMode2D.Force);
+            rb2d.constraints = RigidbodyConstraints2D.FreezePositionY | RigidbodyConstraints2D.FreezeRotation;
+            Debug.Log("dash izquierdo");
+            dash = true;
+            StartCoroutine(WaitDash());
+        }
+
+    }
+    void Jumping()
+    {
         ///Salto detectando el piso con condición
         ///
         if (Input.GetKeyDown(KeyCode.UpArrow) && grounded)
@@ -98,41 +146,43 @@ public class PlayerController : MonoBehaviour
             JumpD = true;
 
         }
-        ///////////////////////////////////////////////7
-        //////////////Dash
-        if (Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.RightArrow) && Mathf.Abs(rb2d.velocity.x)>=maxSpeed)
+        if (JumpD)
         {
-            
-            rb2d.AddRelativeForce(Vector2.right * Dash, ForceMode2D.Force);
-            rb2d.constraints = RigidbodyConstraints2D.FreezePositionY| RigidbodyConstraints2D.FreezeRotation;
-            Debug.Log("dash derecho");
-            dash = true;
-            StartCoroutine(WaitDash());
-            
+            rb2d.AddForce(Vector2.up * JumpSonic, ForceMode2D.Impulse);
+            Jump = true;
+            JumpD = false;
+
         }
 
-        else if (Input.GetKeyDown(KeyCode.Z) && Input.GetKey(KeyCode.LeftArrow) && Mathf.Abs(rb2d.velocity.x)>=maxSpeed)
+
+
+        ///////Condición de Air
+        if (rb2d.velocity.y < 0)
         {
-            rb2d.AddForce(Vector2.left * Dash, ForceMode2D.Force);
-            rb2d.constraints= RigidbodyConstraints2D.FreezePositionY| RigidbodyConstraints2D.FreezeRotation;
-            Debug.Log("dash izquierdo");
-            dash = true;
-            StartCoroutine(WaitDash());
-        }
-        
+            Jump = false;
+
+            InAir = true;
+
         }
 
+        else InAir = false;
+        ///////
+    }
 
-
-    // Update is called once per frame
-    void FixedUpdate()
+    void Punching()
     {
+        if (Input.GetKeyDown(KeyCode.S))
+        {
+            punch = true;
+            Debug.Log("Punch");
+            StartCoroutine(WaitPunch());
+            
+        }
+    }
 
-        ////////////////////////////////////////////////////
-        ///DETROIT SMASH
-        ///
-
-        if (Input.GetKeyDown(KeyCode.C) && detroitCond)
+    void DetroitSmash()
+    {
+        if (Input.GetKey(KeyCode.C) && detroitCond)
         {
             detroit = true;
             detroitD = true;
@@ -148,23 +198,31 @@ public class PlayerController : MonoBehaviour
                 //velocidad = new Vector3(-ballSpeed, 0f, 0f);
                 //BallPos = Player.transform.position + new Vector3(-0.87f, 0.27f, 0f);
             }
-
-
-
         }
+        ////////////////MOVIMIENTO DE DETROIT SMASH
+        if (transform.localScale == new Vector3(2.5f, 2.5f, 1f))
+        {
+            //Ball.transform.localScale = new Vector3(2f, 2f, 1f);
+            velocidad = new Vector3(ballSpeed, 0f, 0f);
+            DetroitPos = Player.transform.position + new Vector3(0.87f, 0f, 0f);
+        }
+        else if (transform.localScale == new Vector3(-2.5f, 2.5f, 1f))
+        {
+            //Ball.transform.localScale = new Vector3(-2f, 2f, 1f);
+            velocidad = new Vector3(-ballSpeed, 0f, 0f);
+            DetroitPos = Player.transform.position + new Vector3(-0.87f, 0f, 0f);
+        }
+        if (detroitD)
+        {
+            StartCoroutine(WaitDetroit());
+            detroitD = false;
+            Debug.Log("Detroit Smash!!!");
+        }
+    }
 
-
-
-
-
-            /////////////////////////////////////////////////////
-
-
-
-
-            /////////////Lanzamiento de bola inicial
-
-            if (Input.GetKeyDown(KeyCode.X) && LaunchCond && grounded)
+    void BallLaunch()
+    {
+        if (Input.GetKey(KeyCode.X) && LaunchCond && grounded)
         {
             Launch = true;
             LaunchD = true;
@@ -185,7 +243,7 @@ public class PlayerController : MonoBehaviour
         }
 
 
-            ///////////////MOVIMIENTO DE BALL
+        ///////////////MOVIMIENTO DE BALL
         if (transform.localScale == new Vector3(2.5f, 2.5f, 1f))
         {
             //Ball.transform.localScale = new Vector3(2f, 2f, 1f);
@@ -198,26 +256,24 @@ public class PlayerController : MonoBehaviour
             velocidad = new Vector3(-ballSpeed, 0f, 0f);
             BallPos = Player.transform.position + new Vector3(-0.87f, 0.27f, 0f);
         }
-
-
-
-        ////////////////MOVIMIENTO DE DETROIT SMASH
-        if (transform.localScale == new Vector3(2.5f, 2.5f, 1f))
+        ////////////Lanzamiento de bola
+        if (LaunchD)
         {
-            //Ball.transform.localScale = new Vector3(2f, 2f, 1f);
-            velocidad = new Vector3(ballSpeed, 0f, 0f);
-            DetroitPos = Player.transform.position + new Vector3(0.87f, 0f, 0f);
-        }
-        else if (transform.localScale == new Vector3(-2.5f, 2.5f, 1f))
-        {
-            //Ball.transform.localScale = new Vector3(-2f, 2f, 1f);
-            velocidad = new Vector3(-ballSpeed, 0f, 0f);
-            DetroitPos = Player.transform.position + new Vector3(-0.87f, 0f, 0f);
+            //Player.transform.position + new Vector3(0.87f, 0.27f, 0f);
+            StartCoroutine(WaitBall());
+
+            //StartCoroutine(Wait());
+
+            LaunchD = false;
+            Debug.Log("Lanzamiento");
         }
 
+    }
 
-        ////////////Movimiento en X
-        ///
+    void Movement()
+    {
+
+      
         float h = Input.GetAxis("Horizontal");
 
         rb2d.AddForce(Vector2.right * speed * h);
@@ -234,58 +290,31 @@ public class PlayerController : MonoBehaviour
         if (h < -0.1f)
         {
             transform.localScale = new Vector3(-2.5f, 2.5f, 1f);
-
-
         }
-        /*if (Mathf.Abs(rb2d.velocity.x) <= maxSpeed * 0.9)
-        {
-            rb2d.velocity = new Vector2(0f, rb2d.velocity.y);
-        }*/
+    }
 
-        /////////SALTO
-        if (JumpD)
-        {
-            rb2d.AddForce(Vector2.up * JumpSonic, ForceMode2D.Impulse);
-            Jump = true;
-            JumpD = false;
 
-        }
-        ////////////////////////////////////7
-        
 
-////////////Lanzamiento de bola
-        if (LaunchD)
-        {
-             //Player.transform.position + new Vector3(0.87f, 0.27f, 0f);
-            StartCoroutine(WaitBall());
+    // Update is called once per frame
+    void FixedUpdate()
+    {
 
-            //StartCoroutine(Wait());
-            
-            LaunchD = false;
-            Debug.Log("Lanzamiento");
-        }
-
-        if(detroitD)
-        {
-            StartCoroutine(WaitDetroit());
-            detroitD = false;
-            Debug.Log("Detroit Smash!!!");
-        }
-
-        ///////Condición de Air
-        if (rb2d.velocity.y < 0)
-        {
-            Jump = false;
-
-            InAir = true;
-
-        }
-
-        else InAir = false;
-        ////////////////////////////////
+        ////////////////////////////////////////////////////
+        ///DETROIT SMASH
         ///
-
-        ////////Movimiento del Dash
+        DetroitSmash();
+        /////////////Lanzamiento de bola inicial
+        BallLaunch();
+        ////////////Movimiento en X
+        ///
+        Movement();
+        ////////////////////////////////////////7
+        //////////////Dash
+        Dashing();
+        ////////////////////////////////////7
+        /////////SALTO
+        Jumping();
+        ////////////////////////////////
         
     }
     ////////////////////////////
