@@ -66,10 +66,13 @@ public class PlayerController : MonoBehaviour
     {
         LaunchCond = false;
         Ball.gameObject.SetActive(true);
-        yield return new WaitForSeconds(0.4f);
-        Launch = false;
+        
+        yield return new WaitForSeconds(0.3f);
         Ball.transform.position = BallPos;
         Ball.GetComponent<Rigidbody2D>().velocity = velocidad;
+        
+        Launch = false;
+        
     }
 
     public IEnumerator WaitDetroit()
@@ -77,9 +80,12 @@ public class PlayerController : MonoBehaviour
         detroitCond=false;
         
         Detroit_Smash.gameObject.SetActive(true);
-        yield return new WaitForSeconds(0.4f);
+        
+        yield return new WaitForSeconds(0.3f);
         Detroit_Smash.transform.position = DetroitPos;
         Detroit_Smash.GetComponent<Rigidbody2D>().velocity = velocidad;
+        
+        
         detroit = false;
 
     }

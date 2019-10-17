@@ -36,9 +36,7 @@ public class AirBotController : MonoBehaviour
         transform.rotation = Quaternion.Euler(new Vector3(0, 0, angle));
 
     }
-
-
-
+    
     void TargetImpulse()
     {
         rb2d.AddForce(new Vector2(targetPos.x, targetPos.y).normalized * Fuerza);
@@ -46,12 +44,16 @@ public class AirBotController : MonoBehaviour
     }
 
 
-
-
-
-    void FixedUpdate()
+    void DeathEnemie()
     {
-        
+        Vector2 DeathJump;
+        DeathJump = new Vector2(300f, 300f);
+        rb2d.bodyType = RigidbodyType2D.Kinematic;
+        rb2d.AddForce(DeathJump);
+    }
+
+    void Tracing()
+    {
         rb2d.bodyType = RigidbodyType2D.Static;
         bool Cond;
 
@@ -61,19 +63,22 @@ public class AirBotController : MonoBehaviour
         }
         else Cond = false;
 
-
-
-
         ///////////////////////////////////////////////////
         if (Cond2 == true && Cond == true)
         {
             PlayerPos.GetComponent<Transform>().position = target.position;
-
-
+            
         }
         Rotation();
         rb2d.bodyType = RigidbodyType2D.Dynamic;
         TargetImpulse();
+
+    }
+
+    void FixedUpdate()
+    {
+        Tracing();
+       
 
 
         //////////////////////////////////////////////////////////7
@@ -87,7 +92,7 @@ public class AirBotController : MonoBehaviour
         if (collision.gameObject.CompareTag("PosRef"))
         {
             Cond2 = true;
-            rb2d.bodyType = RigidbodyType2D.Static;
+            //rb2d.bodyType = RigidbodyType2D.Static;
             transform.rotation = Quaternion.Euler(new Vector3(0,0,0));
             Debug.Log("Trigger active");
         }
